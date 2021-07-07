@@ -1,4 +1,7 @@
-use std::{collections::BTreeSet, mem};
+use std::{
+    collections::btree_map::{BTreeMap, Entry},
+    mem,
+};
 
 use syn::{
     braced,
@@ -14,6 +17,7 @@ use super::{
     response::{ResponseField, ResponseFieldKind},
     Api, Metadata, Request, Response,
 };
+use crate::util::{all_cfgs, any_cfg};
 
 mod kw {
     use syn::custom_keyword;
@@ -164,21 +168,17 @@ fn parse_request(input: ParseStream<'_>, attributes: Vec<Attribute>) -> syn::Res
             }
 
             match field_kind.unwrap_or(RequestFieldKind::Body) {
-                RequestFieldKind::Header => {
-                    collect_lifetime_idents(&mut lifetimes.header, &field.ty)
-                }
-                RequestFieldKind::Body => collect_lifetime_idents(&mut lifetimes.body, &field.ty),
+                RequestFieldKind::Header => collect_lifetime_idents(&mut lifetimes.header, &field),
+                RequestFieldKind::Body => collect_lifetime_idents(&mut lifetimes.body, &field),
                 RequestFieldKind::NewtypeBody => {
-                    collect_lifetime_idents(&mut lifetimes.body, &field.ty)
+                    collect_lifetime_idents(&mut lifetimes.body, &field)
                 }
                 RequestFieldKind::NewtypeRawBody => {
-                    collect_lifetime_idents(&mut lifetimes.body, &field.ty)
+                    collect_lifetime_idents(&mut lifetimes.body, &field)
                 }
-                RequestFieldKind::Path => collect_lifetime_idents(&mut lifetimes.path, &field.ty),
-                RequestFieldKind::Query => collect_lifetime_idents(&mut lifetimes.query, &field.ty),
-                RequestFieldKind::QueryMap => {
-                    collect_lifetime_idents(&mut lifetimes.query, &field.ty)
-                }
+                RequestFieldKind::Path => collect_lifetime_idents(&mut lifetimes.path, &field),
+                RequestFieldKind::Query => collect_lifetime_idents(&mut lifetimes.query, &field),
+                RequestFieldKind::QueryMap => collect_lifetime_idents(&mut lifetimes.query, &field),
             }
 
             Ok(RequestField::new(field_kind.unwrap_or(RequestFieldKind::Body), field, header))
@@ -295,20 +295,49 @@ fn parse_response(input: ParseStream<'_>, attributes: Vec<Attribute>) -> syn::Re
 }
 
 fn has_lifetime(ty: &Type) -> bool {
-    let mut lifetimes = BTreeSet::new();
-    collect_lifetime_idents(&mut lifetimes, ty);
-    !lifetimes.is_empty()
-}
+    struct Visitor {
+        found_lifetime: bool,
+    }
 
-fn collect_lifetime_idents(lifetimes: &mut BTreeSet<Lifetime>, ty: &Type) {
-    struct Visitor<'lt>(&'lt mut BTreeSet<Lifetime>);
-    impl<'ast> Visit<'ast> for Visitor<'_> {
-        fn visit_lifetime(&mut self, lt: &'ast Lifetime) {
-            self.0.insert(lt.clone());
+    impl<'ast> Visit<'ast> for Visitor {
+        fn visit_lifetime(&mut self, _lt: &'ast Lifetime) {
+            self.found_lifetime = true;
         }
     }
 
-    Visitor(lifetimes).visit_type(ty)
+    let mut vis = Visitor { found_lifetime: false };
+    vis.visit_type(ty);
+    vis.found_lifetime
+}
+
+fn collect_lifetime_idents(lifetimes: &mut BTreeMap<Lifetime, Option<Attribute>>, field: &Field) {
+    struct Visitor<'lt> {
+        field_cfg: Option<Attribute>,
+        lifetimes: &'lt mut BTreeMap<Lifetime, Option<Attribute>>,
+    }
+
+    impl<'ast> Visit<'ast> for Visitor<'_> {
+        fn visit_lifetime(&mut self, lt: &'ast Lifetime) {
+            match self.lifetimes.entry(lt.clone()) {
+                Entry::Vacant(v) => {
+                    v.insert(self.field_cfg.clone());
+                }
+                Entry::Occupied(mut o) => {
+                    let lifetime_cfg = o.get_mut();
+
+                    // If at least one field uses this lifetime and has no cfg attribute, we don't
+                    // need a cfg attribute for the lifetime either.
+                    *lifetime_cfg = Option::zip(lifetime_cfg.as_ref(), self.field_cfg.as_ref())
+                        .map(|(a, b)| any_cfg([a, b].iter().copied()));
+                }
+            }
+        }
+    }
+
+    let field_cfg = (!field.attrs.is_empty())
+        .then(|| all_cfgs(field.attrs.iter().filter(|a| a.path.is_ident("cfg"))));
+
+    Visitor { lifetimes, field_cfg }.visit_type(&field.ty)
 }
 
 fn req_res_meta_word<T>(

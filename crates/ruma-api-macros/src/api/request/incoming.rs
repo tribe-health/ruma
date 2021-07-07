@@ -169,18 +169,54 @@ impl Request {
 
         let extract_body =
             (self.has_body_fields() || self.newtype_body_field().is_some()).then(|| {
-                let body_lifetimes = self.has_body_lifetimes().then(|| {
-                    // duplicate the anonymous lifetime as many times as needed
-                    let lifetimes =
-                        std::iter::repeat(quote! { '_ }).take(self.lifetimes.body.len());
-                    quote! { < #( #lifetimes, )* > }
-                });
+                /*let request_body_decls = if self.has_body_lifetimes() {
+                    let body_lifetimes = &self.lifetimes.body;
+                    assert_eq!(
+                        body_lifetimes.len(),
+                        1,
+                        "multiple lifetimes in requests are not yet fully supported"
+                    );
+
+                    let (_lt, cfg) = body_lifetimes.iter().next().unwrap();
+                    if let Some(cfg) = cfg {
+                        let meta =
+                            cfg.parse_meta().expect("cfg attribute can be parsed to syn::Meta");
+                        let cfg_inner = match meta {
+                            syn::Meta::List(mut l) => {
+                                assert!(l.path.is_ident("cfg"), "expected cfg attributes only");
+                                assert_eq!(l.nested.len(), 1, "expected one item inside cfg()");
+
+                                l.nested.pop().unwrap().into_value()
+                            }
+                            _ => panic!("unexpected cfg syntax"),
+                        };
+
+                        quote! {
+                            #cfg
+                            let request_body: <RequestBody<'_> as #ruma_serde::Outgoing>::Incoming;
+
+                            #[cfg(not( #cfg_inner ))]
+                            let request_body: <RequestBody as #ruma_serde::Outgoing>::Incoming;
+                        }
+                    } else {
+                        quote! {
+                            let request_body: <RequestBody<'_> as #ruma_serde::Outgoing>::Incoming;
+                        }
+                    }
+                } else {
+                    quote! {
+                        let request_body: <RequestBody as #ruma_serde::Outgoing>::Incoming;
+                    }
+                };*/
+
+                let lts = if self.has_body_lifetimes() {
+                    quote! { <'_> }
+                } else {
+                    quote! {}
+                };
 
                 quote! {
-                    let request_body: <
-                        RequestBody #body_lifetimes
-                        as #ruma_serde::Outgoing
-                    >::Incoming = {
+                    let request_body: <RequestBody #lts as #ruma_serde::Outgoing>::Incoming = {
                         let body = ::std::convert::AsRef::<[::std::primitive::u8]>::as_ref(
                             request.body(),
                         );

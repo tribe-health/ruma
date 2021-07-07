@@ -1,7 +1,13 @@
+use std::collections::BTreeMap;
+
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::quote;
+use syn::{Attribute, Lifetime};
 
-use crate::api::metadata::{AuthScheme, Metadata};
+use crate::api::{
+    metadata::{AuthScheme, Metadata},
+    util,
+};
 
 use super::{Request, RequestField, RequestFieldKind};
 
@@ -10,13 +16,16 @@ impl Request {
         &self,
         metadata: &Metadata,
         error_ty: &TokenStream,
-        lifetimes: &TokenStream,
+        lifetimes: &BTreeMap<Lifetime, Option<Attribute>>,
         ruma_api: &TokenStream,
     ) -> TokenStream {
         let bytes = quote! { #ruma_api::exports::bytes };
         let http = quote! { #ruma_api::exports::http };
         let percent_encoding = quote! { #ruma_api::exports::percent_encoding };
         let ruma_serde = quote! { #ruma_api::exports::ruma_serde };
+
+        let lifetime_decls = util::lifetime_decls(lifetimes);
+        let lifetime_uses = util::lifetime_uses(lifetimes);
 
         let method = &metadata.method;
         let request_path_string = if self.has_path_fields() {
@@ -192,7 +201,7 @@ impl Request {
                     #( #attrs )*
                     #[automatically_derived]
                     #[cfg(feature = "client")]
-                    impl #lifetimes #ruma_api::OutgoingNonAuthRequest for Request #lifetimes {}
+                    impl #lifetime_decls #ruma_api::OutgoingNonAuthRequest for Request #lifetime_uses {}
                 }
             })
         });
@@ -200,7 +209,7 @@ impl Request {
         quote! {
             #[automatically_derived]
             #[cfg(feature = "client")]
-            impl #lifetimes #ruma_api::OutgoingRequest for Request #lifetimes {
+            impl #lifetime_decls #ruma_api::OutgoingRequest for Request #lifetime_uses {
                 type EndpointError = #error_ty;
                 type IncomingResponse = <Response as #ruma_serde::Outgoing>::Incoming;
 

@@ -1,12 +1,12 @@
 //! Details of the `request` section of the procedural macro.
 
-use std::collections::BTreeSet;
+use std::collections::btree_map::{BTreeMap, Entry};
 
 use proc_macro2::TokenStream;
 use quote::quote;
 use syn::{Attribute, Field, Ident, Lifetime};
 
-use crate::util;
+use crate::util::{self, any_cfg};
 
 use super::metadata::Metadata;
 
@@ -15,10 +15,10 @@ mod outgoing;
 
 #[derive(Default)]
 pub(super) struct RequestLifetimes {
-    pub body: BTreeSet<Lifetime>,
-    pub path: BTreeSet<Lifetime>,
-    pub query: BTreeSet<Lifetime>,
-    pub header: BTreeSet<Lifetime>,
+    pub body: BTreeMap<Lifetime, Option<Attribute>>,
+    pub path: BTreeMap<Lifetime, Option<Attribute>>,
+    pub query: BTreeMap<Lifetime, Option<Attribute>>,
+    pub header: BTreeMap<Lifetime, Option<Attribute>>,
 }
 
 /// The result of processing the `request` section of the macro.
@@ -78,27 +78,38 @@ impl Request {
     }
 
     /// The combination of every fields unique lifetime annotation.
-    fn combine_lifetimes(&self) -> TokenStream {
-        util::unique_lifetimes_to_tokens(
-            [
-                &self.lifetimes.body,
-                &self.lifetimes.path,
-                &self.lifetimes.query,
-                &self.lifetimes.header,
-            ]
-            .iter()
-            .flat_map(|set| set.iter()),
-        )
+    fn combine_lifetimes(&self) -> BTreeMap<Lifetime, Option<Attribute>> {
+        let mut lifetimes = self.lifetimes.body.clone();
+        let mut add_lifetimes = |lts: &BTreeMap<Lifetime, Option<Attribute>>| {
+            for (lt, new_cfg) in lts {
+                match lifetimes.entry(lt.to_owned()) {
+                    Entry::Vacant(v) => {
+                        v.insert(new_cfg.to_owned());
+                    }
+                    Entry::Occupied(mut o) => {
+                        let cfg = o.get_mut();
+                        *cfg = Option::zip(cfg.as_ref(), new_cfg.as_ref())
+                            .map(|(a, b)| any_cfg([a, b].iter().copied()));
+                    }
+                }
+            }
+        };
+
+        add_lifetimes(&self.lifetimes.path);
+        add_lifetimes(&self.lifetimes.query);
+        add_lifetimes(&self.lifetimes.header);
+
+        lifetimes
     }
 
     /// The lifetimes on fields with the `query` attribute.
     fn query_lifetimes(&self) -> TokenStream {
-        util::unique_lifetimes_to_tokens(&self.lifetimes.query)
+        util::lifetime_decls(&self.lifetimes.query)
     }
 
     /// The lifetimes on fields with the `body` attribute.
     fn body_lifetimes(&self) -> TokenStream {
-        util::unique_lifetimes_to_tokens(&self.lifetimes.body)
+        util::lifetime_decls(&self.lifetimes.body)
     }
 
     /// Produces an iterator over all the header fields.
@@ -232,6 +243,8 @@ impl Request {
         };
 
         let lifetimes = self.combine_lifetimes();
+        let lifetime_decls = util::lifetime_decls(&lifetimes);
+
         let outgoing_request_impl = self.expand_outgoing(metadata, error_ty, &lifetimes, ruma_api);
         let incoming_request_impl = self.expand_incoming(metadata, error_ty, ruma_api);
 
@@ -241,7 +254,7 @@ impl Request {
             #[cfg_attr(not(feature = "unstable-exhaustive-types"), non_exhaustive)]
             #[incoming_derive(!Deserialize)]
             #( #struct_attributes )*
-            pub struct Request #lifetimes #request_def
+            pub struct Request #lifetime_decls #request_def
 
             #request_body_struct
             #request_query_struct

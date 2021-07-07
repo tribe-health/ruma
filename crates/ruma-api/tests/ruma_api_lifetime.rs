@@ -52,7 +52,7 @@ mod nested_types {
             pub room_alias: &'a [Option<&'a RoomAliasId>],
 
             /// The room ID to set.
-            pub room_id: &'b [Option<Option<&'a ruma_identifiers::DeviceId>>],
+            pub room_id: &'a [Option<Option<&'a ruma_identifiers::DeviceId>>],
         }
 
         response: {}
