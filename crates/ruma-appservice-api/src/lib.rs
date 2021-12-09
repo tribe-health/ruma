@@ -5,6 +5,7 @@
 //!
 //! [appservice-api]: https://spec.matrix.org/v1.4/application-service-api/
 
+#![feature(type_alias_impl_trait)]
 #![warn(missing_docs)]
 
 use serde::{Deserialize, Serialize};

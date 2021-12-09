@@ -352,7 +352,7 @@ pub mod v3 {
     #[cfg(test)]
     mod tests {
         use assert_matches::assert_matches;
-        use serde_json::{from_value as from_json_value, json};
+        use serde_json::{from_value as from_json_value, json, Value as JsonValue};
 
         use super::{LoginInfo, Token};
         use crate::uiaa::UserIdentifier;
@@ -392,13 +392,12 @@ pub mod v3 {
         #[test]
         #[cfg(feature = "client")]
         fn serialize_login_request_body() {
-            use ruma_common::api::{MatrixVersion, OutgoingRequest, SendAccessToken};
-            use serde_json::Value as JsonValue;
+            use ruma_common::api::{IntoHttpBody, MatrixVersion, OutgoingRequest, SendAccessToken};
 
             use super::{LoginInfo, Password, Request, Token};
             use crate::uiaa::UserIdentifier;
 
-            let req: http::Request<Vec<u8>> = Request {
+            let req = Request {
                 login_info: LoginInfo::Token(Token { token: "0xdeadbeef".to_owned() }),
                 device_id: None,
                 initial_device_display_name: Some("test".to_owned()),
@@ -411,7 +410,8 @@ pub mod v3 {
             )
             .unwrap();
 
-            let req_body_value: JsonValue = serde_json::from_slice(req.body()).unwrap();
+            let req_body_value: JsonValue =
+                serde_json::from_slice(&req.body().to_buf::<Vec<u8>>().unwrap()).unwrap();
             assert_eq!(
                 req_body_value,
                 json!({
@@ -421,7 +421,7 @@ pub mod v3 {
                 })
             );
 
-            let req: http::Request<Vec<u8>> = Request {
+            let req = Request {
                 login_info: LoginInfo::Password(Password {
                     identifier: UserIdentifier::Email { address: "hello@example.com".to_owned() },
                     password: "deadbeef".to_owned(),
@@ -437,7 +437,8 @@ pub mod v3 {
             )
             .unwrap();
 
-            let req_body_value: JsonValue = serde_json::from_slice(req.body()).unwrap();
+            let req_body_value: JsonValue =
+                serde_json::from_slice(&req.body().to_buf::<Vec<u8>>().unwrap()).unwrap();
             assert_eq!(
                 req_body_value,
                 json!({

@@ -6,6 +6,7 @@
 //! [client-api]: https://spec.matrix.org/v1.4/client-server-api/
 
 #![cfg(any(feature = "client", feature = "server"))]
+#![feature(type_alias_impl_trait)]
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
 #![warn(missing_docs)]
 

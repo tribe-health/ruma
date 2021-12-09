@@ -5,6 +5,7 @@
 //!
 //! [federation-api]: https://spec.matrix.org/v1.4/server-server-api/
 
+#![feature(type_alias_impl_trait)]
 #![warn(missing_docs)]
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
 

@@ -8,12 +8,13 @@ pub mod v3 {
     //! [spec]: https://spec.matrix.org/v1.4/client-server-api/#get_matrixclientv3roomsroomidstateeventtypestatekey
 
     use ruma_common::{
-        api::{response, Metadata},
+        api::{error::FromHttpRequestError, response, Metadata, TryFromHttpBody},
         events::{AnyStateEventContent, StateEventType},
         metadata,
         serde::Raw,
         OwnedRoomId,
     };
+    use serde::Serialize;
 
     const METADATA: Metadata = metadata! {
         method: GET,
@@ -57,6 +58,11 @@ pub mod v3 {
         pub content: Raw<AnyStateEventContent>,
     }
 
+    #[derive(Serialize)]
+    #[doc(hidden)]
+    #[non_exhaustive]
+    pub struct RequestBody {}
+
     impl Response {
         /// Creates a new `Response` with the given content.
         pub fn new(content: Raw<AnyStateEventContent>) -> Self {
@@ -66,17 +72,19 @@ pub mod v3 {
 
     #[cfg(feature = "client")]
     impl ruma_common::api::OutgoingRequest for Request {
+        type OutgoingBody = RequestBody; // impl IntoHttpBody;
         type EndpointError = crate::Error;
         type IncomingResponse = Response;
 
         const METADATA: Metadata = METADATA;
 
-        fn try_into_http_request<T: Default + bytes::BufMut>(
+        fn try_into_http_request(
             self,
             base_url: &str,
             access_token: ruma_common::api::SendAccessToken<'_>,
             considering_versions: &'_ [ruma_common::api::MatrixVersion],
-        ) -> Result<http::Request<T>, ruma_common::api::error::IntoHttpError> {
+        ) -> Result<http::Request<Self::OutgoingBody>, ruma_common::api::error::IntoHttpError>
+        {
             use http::header;
 
             http::Request::builder()
@@ -97,24 +105,24 @@ pub mod v3 {
                             .ok_or(ruma_common::api::error::IntoHttpError::NeedsAuthentication)?,
                     ),
                 )
-                .body(T::default())
+                .body(RequestBody {})
                 .map_err(Into::into)
         }
     }
 
     #[cfg(feature = "server")]
     impl ruma_common::api::IncomingRequest for Request {
+        type IncomingBody = impl TryFromHttpBody<FromHttpRequestError>;
         type EndpointError = crate::Error;
         type OutgoingResponse = Response;
 
         const METADATA: Metadata = METADATA;
 
-        fn try_from_http_request<B, S>(
-            _request: http::Request<B>,
+        fn try_from_http_request<S>(
+            request: http::Request<Self::IncomingBody>,
             path_args: &[S],
-        ) -> Result<Self, ruma_common::api::error::FromHttpRequestError>
+        ) -> Result<Self, FromHttpRequestError>
         where
-            B: AsRef<[u8]>,
             S: AsRef<str>,
         {
             // FIXME: find a way to make this if-else collapse with serde recognizing trailing
@@ -138,6 +146,8 @@ pub mod v3 {
 
                     (a, b, "".into())
                 };
+
+            let _body: ruma_common::api::RawHttpBody = request.into_body();
 
             Ok(Self { room_id, event_type, state_key })
         }
