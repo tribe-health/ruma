@@ -246,13 +246,10 @@ mod tests {
         }"#;
         let event: RoomJoinRulesEventContent = serde_json::from_str(json).unwrap();
         match event.join_rule {
-            JoinRule::Restricted(restricted) => assert_eq!(
-                restricted.allow,
-                &[
-                    AllowRule::room_membership(room_id!("!mods:example.org").to_owned()),
-                    AllowRule::room_membership(room_id!("!users:example.org").to_owned())
-                ]
-            ),
+            JoinRule::Restricted(restricted) => assert_eq!(restricted.allow, &[
+                AllowRule::room_membership(room_id!("!mods:example.org").to_owned()),
+                AllowRule::room_membership(room_id!("!users:example.org").to_owned())
+            ]),
             rule => panic!("Deserialized to wrong variant: {:?}", rule),
         }
     }

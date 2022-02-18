@@ -140,10 +140,9 @@ mod tests {
 
     #[test]
     fn new_with_empty_name_creates_content_as_none() {
-        assert_matches!(
-            RoomNameEventContent::new("".try_into().ok()),
-            RoomNameEventContent { name: None }
-        );
+        assert_matches!(RoomNameEventContent::new("".try_into().ok()), RoomNameEventContent {
+            name: None
+        });
     }
 
     #[test]

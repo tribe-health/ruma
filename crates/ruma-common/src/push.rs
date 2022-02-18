@@ -986,18 +986,15 @@ mod tests {
         )
         .unwrap();
 
-        assert_matches!(
-            set.get_actions(&message, context_one_to_one),
-            [
-                Action::Notify,
-                Action::SetTweak(Tweak::Sound(_)),
-                Action::SetTweak(Tweak::Highlight(false))
-            ]
-        );
-        assert_matches!(
-            set.get_actions(&message, context_public_room),
-            [Action::Notify, Action::SetTweak(Tweak::Highlight(false))]
-        );
+        assert_matches!(set.get_actions(&message, context_one_to_one), [
+            Action::Notify,
+            Action::SetTweak(Tweak::Sound(_)),
+            Action::SetTweak(Tweak::Highlight(false))
+        ]);
+        assert_matches!(set.get_actions(&message, context_public_room), [
+            Action::Notify,
+            Action::SetTweak(Tweak::Highlight(false))
+        ]);
 
         let user_name = serde_json::from_str::<Raw<JsonValue>>(
             r#"{
@@ -1009,22 +1006,16 @@ mod tests {
         )
         .unwrap();
 
-        assert_matches!(
-            set.get_actions(&user_name, context_one_to_one),
-            [
-                Action::Notify,
-                Action::SetTweak(Tweak::Sound(_)),
-                Action::SetTweak(Tweak::Highlight(true)),
-            ]
-        );
-        assert_matches!(
-            set.get_actions(&user_name, context_public_room),
-            [
-                Action::Notify,
-                Action::SetTweak(Tweak::Sound(_)),
-                Action::SetTweak(Tweak::Highlight(true)),
-            ]
-        );
+        assert_matches!(set.get_actions(&user_name, context_one_to_one), [
+            Action::Notify,
+            Action::SetTweak(Tweak::Sound(_)),
+            Action::SetTweak(Tweak::Highlight(true)),
+        ]);
+        assert_matches!(set.get_actions(&user_name, context_public_room), [
+            Action::Notify,
+            Action::SetTweak(Tweak::Sound(_)),
+            Action::SetTweak(Tweak::Highlight(true)),
+        ]);
 
         let notice = serde_json::from_str::<Raw<JsonValue>>(
             r#"{
@@ -1049,10 +1040,10 @@ mod tests {
         )
         .unwrap();
 
-        assert_matches!(
-            set.get_actions(&at_room, context_public_room),
-            [Action::Notify, Action::SetTweak(Tweak::Highlight(true)),]
-        );
+        assert_matches!(set.get_actions(&at_room, context_public_room), [
+            Action::Notify,
+            Action::SetTweak(Tweak::Highlight(true)),
+        ]);
 
         let empty = serde_json::from_str::<Raw<JsonValue>>(r#"{}"#).unwrap();
         assert_matches!(set.get_actions(&empty, context_one_to_one), []);
@@ -1106,10 +1097,9 @@ mod tests {
         set.add(no_conditions);
 
         let test_set = set.clone();
-        assert_matches!(
-            test_set.get_actions(&message, context_one_to_one),
-            [Action::SetTweak(Tweak::Highlight(true))]
-        );
+        assert_matches!(test_set.get_actions(&message, context_one_to_one), [Action::SetTweak(
+            Tweak::Highlight(true)
+        )]);
 
         let sender = AnyPushRule::Sender(SimplePushRule {
             actions: vec![Action::Notify],

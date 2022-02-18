@@ -52,13 +52,10 @@ impl Request {
                 )?;
             };
 
-            (
-                parse,
-                quote! {
-                    #( #cfg_attrs )*
-                    #field_name,
-                },
-            )
+            (parse, quote! {
+                #( #cfg_attrs )*
+                #field_name,
+            })
         } else if self.has_query_fields() {
             let (decls, names) = vars(
                 self.fields.iter().filter_map(RequestField::as_query_field),
@@ -100,16 +97,13 @@ impl Request {
                         }) if segments.last().unwrap().ident == "Option" => {
                             (quote! { Some(str_value.to_owned()) }, quote! { None })
                         }
-                        _ => (
-                            quote! { str_value.to_owned() },
-                            quote! {
-                                return Err(
-                                    #ruma_api::error::HeaderDeserializationError::MissingHeader(
-                                        #header_name_string.into()
-                                    ).into(),
-                                )
-                            },
-                        ),
+                        _ => (quote! { str_value.to_owned() }, quote! {
+                            return Err(
+                                #ruma_api::error::HeaderDeserializationError::MissingHeader(
+                                    #header_name_string.into()
+                                ).into(),
+                            )
+                        }),
                     };
 
                     let decl = quote! {
@@ -123,13 +117,10 @@ impl Request {
                         };
                     };
 
-                    (
-                        decl,
-                        quote! {
-                            #( #cfg_attrs )*
-                            #field_name
-                        },
-                    )
+                    (decl, quote! {
+                        #( #cfg_attrs )*
+                        #field_name
+                    })
                 })
                 .unzip();
 
@@ -252,13 +243,10 @@ fn vars<'a>(
                 let #field_name = #src.#field_name;
             };
 
-            (
-                decl,
-                quote! {
-                    #( #cfg_attrs )*
-                    #field_name,
-                },
-            )
+            (decl, quote! {
+                #( #cfg_attrs )*
+                #field_name,
+            })
         })
         .unzip()
 }

@@ -326,9 +326,8 @@ mod tests {
         }))
         .unwrap();
 
-        assert_eq!(
-            deserialized,
-            ErrorKind::IncompatibleRoomVersion { room_version: room_version_id!("7") }
-        );
+        assert_eq!(deserialized, ErrorKind::IncompatibleRoomVersion {
+            room_version: room_version_id!("7")
+        });
     }
 }

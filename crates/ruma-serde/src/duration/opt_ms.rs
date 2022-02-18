@@ -57,30 +57,27 @@ mod tests {
     fn deserialize_some() {
         let json = json!({ "timeout": 3000 });
 
-        assert_eq!(
-            serde_json::from_value::<DurationTest>(json).unwrap(),
-            DurationTest { timeout: Some(Duration::from_millis(3000)) },
-        );
+        assert_eq!(serde_json::from_value::<DurationTest>(json).unwrap(), DurationTest {
+            timeout: Some(Duration::from_millis(3000))
+        },);
     }
 
     #[test]
     fn deserialize_none_by_absence() {
         let json = json!({});
 
-        assert_eq!(
-            serde_json::from_value::<DurationTest>(json).unwrap(),
-            DurationTest { timeout: None },
-        );
+        assert_eq!(serde_json::from_value::<DurationTest>(json).unwrap(), DurationTest {
+            timeout: None
+        },);
     }
 
     #[test]
     fn deserialize_none_by_null() {
         let json = json!({ "timeout": null });
 
-        assert_eq!(
-            serde_json::from_value::<DurationTest>(json).unwrap(),
-            DurationTest { timeout: None },
-        );
+        assert_eq!(serde_json::from_value::<DurationTest>(json).unwrap(), DurationTest {
+            timeout: None
+        },);
     }
 
     #[test]

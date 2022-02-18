@@ -1028,10 +1028,9 @@ mod tests {
             ),
         ];
 
-        let edges = vec![
-            vec!["END", "T4", "MZ1", "PA2", "T2", "PA1", "T1", "START"],
-            vec!["END", "MZ1", "T3", "PB", "PA1"],
-        ]
+        let edges = vec![vec!["END", "T4", "MZ1", "PA2", "T2", "PA1", "T1", "START"], vec![
+            "END", "MZ1", "T3", "PB", "PA1",
+        ]]
         .into_iter()
         .map(|list| list.into_iter().map(event_id).collect::<Vec<_>>())
         .collect::<Vec<_>>();

@@ -95,10 +95,11 @@ mod tests {
             "v1.1".to_owned(),
             "v1.2".to_owned(),
         ]);
-        assert_eq!(
-            sorted.known_versions().collect::<Vec<_>>(),
-            vec![MatrixVersion::V1_0, MatrixVersion::V1_1, MatrixVersion::V1_2],
-        );
+        assert_eq!(sorted.known_versions().collect::<Vec<_>>(), vec![
+            MatrixVersion::V1_0,
+            MatrixVersion::V1_1,
+            MatrixVersion::V1_2
+        ],);
 
         let sorted_reverse = Response::new(vec![
             "v1.2".to_owned(),
@@ -108,10 +109,11 @@ mod tests {
             "r0.5.0".to_owned(),
             "r0.0.1".to_owned(),
         ]);
-        assert_eq!(
-            sorted_reverse.known_versions().collect::<Vec<_>>(),
-            vec![MatrixVersion::V1_0, MatrixVersion::V1_1, MatrixVersion::V1_2],
-        );
+        assert_eq!(sorted_reverse.known_versions().collect::<Vec<_>>(), vec![
+            MatrixVersion::V1_0,
+            MatrixVersion::V1_1,
+            MatrixVersion::V1_2
+        ],);
 
         let random_order = Response::new(vec![
             "v1.1".to_owned(),
@@ -121,9 +123,10 @@ mod tests {
             "r0.0.1".to_owned(),
             "v1.2".to_owned(),
         ]);
-        assert_eq!(
-            random_order.known_versions().collect::<Vec<_>>(),
-            vec![MatrixVersion::V1_0, MatrixVersion::V1_1, MatrixVersion::V1_2],
-        );
+        assert_eq!(random_order.known_versions().collect::<Vec<_>>(), vec![
+            MatrixVersion::V1_0,
+            MatrixVersion::V1_1,
+            MatrixVersion::V1_2
+        ],);
     }
 }

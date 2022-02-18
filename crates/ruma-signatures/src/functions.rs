@@ -381,14 +381,11 @@ pub fn reference_hash(
 
     let hash = Sha256::digest(json.as_bytes());
 
-    Ok(encode_config(
-        &hash,
-        match version {
-            RoomVersionId::V1 | RoomVersionId::V2 | RoomVersionId::V3 => STANDARD_NO_PAD,
-            // Room versions higher than version 3 are url safe base64 encoded
-            _ => URL_SAFE_NO_PAD,
-        },
-    ))
+    Ok(encode_config(&hash, match version {
+        RoomVersionId::V1 | RoomVersionId::V2 | RoomVersionId::V3 => STANDARD_NO_PAD,
+        // Room versions higher than version 3 are url safe base64 encoded
+        _ => URL_SAFE_NO_PAD,
+    }))
 }
 
 /// Hashes and signs an event and adds the hash and signature to objects under the keys `hashes` and

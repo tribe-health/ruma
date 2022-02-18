@@ -585,13 +585,10 @@ mod tests {
         .unwrap();
 
         let flattened = FlattenedJson::from_raw(&raw);
-        assert_eq!(
-            flattened.map,
-            btreemap! {
-                "desc".into() => "Level 0".into(),
-                "up.desc".into() => "Level 1".into(),
-                "up.up.desc".into() => "Level 2".into(),
-            },
-        );
+        assert_eq!(flattened.map, btreemap! {
+            "desc".into() => "Level 0".into(),
+            "up.desc".into() => "Level 1".into(),
+            "up.up.desc".into() => "Level 2".into(),
+        },);
     }
 }

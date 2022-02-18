@@ -279,12 +279,9 @@ mod tests {
         }))
         .unwrap();
 
-        assert_eq!(
-            deserialized,
-            ErrorBody {
-                kind: ErrorKind::Forbidden,
-                message: "You are not authorized to ban users in this room.".into(),
-            }
-        );
+        assert_eq!(deserialized, ErrorBody {
+            kind: ErrorKind::Forbidden,
+            message: "You are not authorized to ban users in this room.".into(),
+        });
     }
 }

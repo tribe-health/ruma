@@ -53,10 +53,9 @@ mod tests {
     fn deserialize() {
         let json = json!({ "timeout": 3 });
 
-        assert_eq!(
-            serde_json::from_value::<DurationTest>(json).unwrap(),
-            DurationTest { timeout: Duration::from_secs(3) },
-        );
+        assert_eq!(serde_json::from_value::<DurationTest>(json).unwrap(), DurationTest {
+            timeout: Duration::from_secs(3)
+        },);
     }
 
     #[test]

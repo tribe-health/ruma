@@ -340,11 +340,9 @@ pub mod v3 {
                 device_id: None,
                 initial_device_display_name: Some("test"),
             }
-            .try_into_http_request(
-                "https://homeserver.tld",
-                SendAccessToken::None,
-                &[MatrixVersion::V1_1],
-            )
+            .try_into_http_request("https://homeserver.tld", SendAccessToken::None, &[
+                MatrixVersion::V1_1,
+            ])
             .unwrap();
 
             let req_body_value: JsonValue = serde_json::from_slice(req.body()).unwrap();
@@ -368,11 +366,9 @@ pub mod v3 {
                 device_id: None,
                 initial_device_display_name: Some("test"),
             }
-            .try_into_http_request(
-                "https://homeserver.tld",
-                SendAccessToken::None,
-                &[MatrixVersion::V1_1],
-            )
+            .try_into_http_request("https://homeserver.tld", SendAccessToken::None, &[
+                MatrixVersion::V1_1,
+            ])
             .unwrap();
 
             let req_body_value: JsonValue = serde_json::from_slice(req.body()).unwrap();

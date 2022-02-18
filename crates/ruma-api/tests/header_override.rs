@@ -50,11 +50,9 @@ fn response_content_type_override() {
 fn request_content_type_override() {
     let req = Request { location: None, stuff: "magic".into() };
     let mut http_req = req
-        .try_into_http_request::<Vec<u8>>(
-            "https://homeserver.tld",
-            SendAccessToken::None,
-            &[MatrixVersion::V1_1],
-        )
+        .try_into_http_request::<Vec<u8>>("https://homeserver.tld", SendAccessToken::None, &[
+            MatrixVersion::V1_1,
+        ])
         .unwrap();
 
     assert_eq!(
