@@ -70,6 +70,9 @@
 #![warn(missing_docs)]
 #![cfg_attr(docsrs, feature(doc_cfg, doc_auto_cfg))]
 
+#[cfg(compile_error)]
+compile_error!("!!!");
+
 #[doc(inline)]
 pub use ruma_common::serde;
 
