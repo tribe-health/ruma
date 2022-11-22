@@ -48,7 +48,11 @@ macro_rules! custom_room_event_content {
             }
         }
 
-        impl RedactedEventContent for $i {}
+        impl RedactedEventContent for $i {
+            fn empty(event_type: &str) -> serde_json::Result<Self> {
+                Ok(Self { event_type: event_type.into() })
+            }
+        }
     };
 }
 

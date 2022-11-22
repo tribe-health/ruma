@@ -45,7 +45,15 @@ where
 /// `AnyMessageLikeEvent` and their "sync" and "stripped" counterparts.
 /// The `RedactedEventContent` trait is an implementation detail, ruma makes no
 /// API guarantees.
-pub trait RedactedEventContent: EventContent {}
+pub trait RedactedEventContent: EventContent {
+    /// Constructs the redacted event content.
+    ///
+    /// If called for anything but "empty" redacted content this will error.
+    #[doc(hidden)]
+    fn empty(_event_type: &str) -> serde_json::Result<Self> {
+        Err(serde::de::Error::custom("missing content for redacted event"))
+    }
+}
 
 /// Trait for abstracting over event content structs.
 ///

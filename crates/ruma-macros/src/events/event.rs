@@ -139,6 +139,7 @@ fn expand_deserialize_event(
 ) -> syn::Result<TokenStream> {
     let serde = quote! { #ruma_common::exports::serde };
     let serde_json = quote! { #ruma_common::exports::serde_json };
+    let tracing = quote! { #ruma_common::exports::tracing };
 
     let ident = &input.ident;
     // we know there is a content field already
@@ -187,10 +188,22 @@ fn expand_deserialize_event(
                 if is_generic && var.is_redacted() {
                     quote! {
                         let content = {
-                            let json = content.ok_or_else(
-                                || #serde::de::Error::missing_field("content"),
-                            )?;
+                            let json = content.unwrap_or_else(|| {
+                                #tracing::warn!(
+                                    "Missing content field on redacted event, falling back to \
+                                     empty object",
+                                );
+                                #serde_json::value::RawValue::from_string("{}".to_owned())
+                                    .unwrap()
+                            });
+
                             C::from_parts(&event_type, &json)
+                                .or_else(|err| {
+                                    #tracing::warn!(
+                                        "Redacted event content is invalid: {}", err
+                                    );
+                                    C::empty(&event_type)
+                                })
                                 .map_err(#serde::de::Error::custom)?
                         };
                     }

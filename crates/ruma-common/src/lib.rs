@@ -70,4 +70,5 @@ pub mod exports {
     pub use ruma_macros;
     pub use serde;
     pub use serde_json;
+    pub use tracing;
 }
