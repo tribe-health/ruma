@@ -3,10 +3,10 @@ use serde_json::value::RawValue as RawJsonValue;
 
 use super::{
     EphemeralRoomEventContent, EphemeralRoomEventType, EventContent, GlobalAccountDataEventContent,
-    GlobalAccountDataEventType, MessageLikeEventContent, MessageLikeEventType, RedactContent,
-    RedactedEventContent, RedactedMessageLikeEventContent, RedactedStateEventContent,
-    RoomAccountDataEventContent, RoomAccountDataEventType, StateEventContent, StateEventType,
-    StateUnsigned, ToDeviceEventContent, ToDeviceEventType,
+    GlobalAccountDataEventType, HasDeserializeFields, MessageLikeEventContent,
+    MessageLikeEventType, RedactContent, RedactedEventContent, RedactedMessageLikeEventContent,
+    RedactedStateEventContent, RoomAccountDataEventContent, RoomAccountDataEventType,
+    StateEventContent, StateEventType, StateUnsigned, ToDeviceEventContent, ToDeviceEventType,
 };
 use crate::RoomVersionId;
 
@@ -48,7 +48,15 @@ macro_rules! custom_room_event_content {
             }
         }
 
-        impl RedactedEventContent for $i {}
+        impl RedactedEventContent for $i {
+            fn empty(event_type: &str) -> serde_json::Result<Self> {
+                Ok(Self { event_type: event_type.into() })
+            }
+
+            fn has_deserialize_fields() -> HasDeserializeFields {
+                HasDeserializeFields::False
+            }
+        }
     };
 }
 

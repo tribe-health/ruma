@@ -11,9 +11,9 @@ use serde_json::{from_str as from_json_str, value::RawValue as RawJsonValue};
 
 use crate::{
     events::{
-        AnyStrippedStateEvent, EventContent, RedactContent, RedactedEventContent,
-        RedactedStateEventContent, Relations, StateEventContent, StateEventType, StateUnsigned,
-        StateUnsignedFromParts, StaticEventContent,
+        AnyStrippedStateEvent, EventContent, HasDeserializeFields, RedactContent,
+        RedactedEventContent, RedactedStateEventContent, Relations, StateEventContent,
+        StateEventType, StateUnsigned, StateUnsignedFromParts, StaticEventContent,
     },
     serde::{CanBeEmpty, Raw, StringEnum},
     OwnedMxcUri, OwnedServerName, OwnedServerSigningKeyId, OwnedTransactionId, OwnedUserId,
@@ -218,7 +218,11 @@ impl RedactedStateEventContent for RedactedRoomMemberEventContent {}
 
 // Since this redacted event has fields we leave the default `empty` method
 // that will error if called.
-impl RedactedEventContent for RedactedRoomMemberEventContent {}
+impl RedactedEventContent for RedactedRoomMemberEventContent {
+    fn has_deserialize_fields() -> HasDeserializeFields {
+        HasDeserializeFields::Optional
+    }
+}
 
 impl RoomMemberEvent {
     /// Obtain the membership state, regardless of whether this event is redacted.

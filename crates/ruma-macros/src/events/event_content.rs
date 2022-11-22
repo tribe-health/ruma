@@ -350,6 +350,7 @@ fn generate_redacted_event_content<'a>(
     );
 
     let serde = quote! { #ruma_common::exports::serde };
+    let serde_json = quote! { #ruma_common::exports::serde_json };
 
     let doc = format!("Redacted form of [`{ident}`]");
     let redacted_ident = format_ident!("Redacted{ident}");
@@ -386,6 +387,22 @@ fn generate_redacted_event_content<'a>(
 
     let redaction_struct_fields = kept_redacted_fields.iter().flat_map(|f| &f.ident);
 
+    let redacted_return = if kept_redacted_fields.is_empty() {
+        quote! { Ok(#redacted_ident {}) }
+    } else {
+        quote! {
+            Err(#serde::de::Error::custom(
+                format!("this redacted event has fields that cannot be constructed")
+            ))
+        }
+    };
+
+    let has_deserialize_fields = if kept_redacted_fields.is_empty() {
+        quote! { #ruma_common::events::HasDeserializeFields::False }
+    } else {
+        quote! { #ruma_common::events::HasDeserializeFields::True }
+    };
+
     let constructor = kept_redacted_fields.is_empty().then(|| {
         let doc = format!("Creates an empty {redacted_ident}.");
         quote! {
@@ -416,6 +433,12 @@ fn generate_redacted_event_content<'a>(
         generate_static_event_content_impl(&redacted_ident, kind, true, event_type, ruma_common)
     });
 
+    let mut event_types = aliases.to_owned();
+    event_types.push(event_type.to_owned());
+    let event_types = quote! {
+        [#(#event_types,)*]
+    };
+
     Ok(quote! {
         // this is the non redacted event content's impl
         #[automatically_derived]
@@ -441,7 +464,21 @@ fn generate_redacted_event_content<'a>(
         #redacted_event_content
 
         #[automatically_derived]
-        impl #ruma_common::events::RedactedEventContent for #redacted_ident {}
+        impl #ruma_common::events::RedactedEventContent for #redacted_ident {
+            fn empty(ev_type: &str) -> #serde_json::Result<Self> {
+                if !#event_types.contains(&ev_type) {
+                    return Err(#serde::de::Error::custom(
+                        format!("expected event type as one of `{:?}`, found `{}`", #event_types, ev_type)
+                    ));
+                }
+
+                #redacted_return
+            }
+
+            fn has_deserialize_fields() -> #ruma_common::events::HasDeserializeFields {
+                #has_deserialize_fields
+            }
+        }
 
         #[automatically_derived]
         impl #ruma_common::events::#sub_trait_name for #redacted_ident {}
