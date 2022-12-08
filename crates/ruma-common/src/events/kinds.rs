@@ -53,11 +53,11 @@ pub struct SyncEphemeralRoomEvent<C: EphemeralRoomEventContent> {
 /// sorted list would be sorted lexicographically based on the event's `EventId`.
 #[derive(Clone, Debug, Event)]
 pub struct OriginalMessageLikeEvent<C: MessageLikeEventContent> {
-    /// Data specific to the event type.
-    pub content: C,
-
     /// The globally unique event identifier for the user who sent the event.
     pub event_id: OwnedEventId,
+
+    /// Data specific to the event type.
+    pub content: C,
 
     /// The fully-qualified ID of the user who sent this event.
     pub sender: OwnedUserId,
@@ -78,11 +78,11 @@ pub struct OriginalMessageLikeEvent<C: MessageLikeEventContent> {
 /// a sorted list would be sorted lexicographically based on the event's `EventId`.
 #[derive(Clone, Debug, Event)]
 pub struct OriginalSyncMessageLikeEvent<C: MessageLikeEventContent> {
-    /// Data specific to the event type.
-    pub content: C,
-
     /// The globally unique event identifier for the user who sent the event.
     pub event_id: OwnedEventId,
+
+    /// Data specific to the event type.
+    pub content: C,
 
     /// The fully-qualified ID of the user who sent this event.
     pub sender: OwnedUserId,
@@ -100,11 +100,11 @@ pub struct OriginalSyncMessageLikeEvent<C: MessageLikeEventContent> {
 /// sorted list would be sorted lexicographically based on the event's `EventId`.
 #[derive(Clone, Debug, Event)]
 pub struct RedactedMessageLikeEvent<C: RedactedMessageLikeEventContent> {
-    /// Data specific to the event type.
-    pub content: C,
-
     /// The globally unique event identifier for the user who sent the event.
     pub event_id: OwnedEventId,
+
+    /// Data specific to the event type.
+    pub content: C,
 
     /// The fully-qualified ID of the user who sent this event.
     pub sender: OwnedUserId,
@@ -125,11 +125,11 @@ pub struct RedactedMessageLikeEvent<C: RedactedMessageLikeEventContent> {
 /// a sorted list would be sorted lexicographically based on the event's `EventId`.
 #[derive(Clone, Debug, Event)]
 pub struct RedactedSyncMessageLikeEvent<C: RedactedMessageLikeEventContent> {
-    /// Data specific to the event type.
-    pub content: C,
-
     /// The globally unique event identifier for the user who sent the event.
     pub event_id: OwnedEventId,
+
+    /// Data specific to the event type.
+    pub content: C,
 
     /// The fully-qualified ID of the user who sent this event.
     pub sender: OwnedUserId,
@@ -183,11 +183,11 @@ where
 /// list would be sorted lexicographically based on the event's `EventId`.
 #[derive(Clone, Debug, Event)]
 pub struct OriginalStateEvent<C: StateEventContent> {
-    /// Data specific to the event type.
-    pub content: C,
-
     /// The globally unique event identifier for the user who sent the event.
     pub event_id: OwnedEventId,
+
+    /// Data specific to the event type.
+    pub content: C,
 
     /// The fully-qualified ID of the user who sent this event.
     pub sender: OwnedUserId,
@@ -214,11 +214,11 @@ pub struct OriginalStateEvent<C: StateEventContent> {
 /// sorted list would be sorted lexicographically based on the event's `EventId`.
 #[derive(Clone, Debug, Event)]
 pub struct OriginalSyncStateEvent<C: StateEventContent> {
-    /// Data specific to the event type.
-    pub content: C,
-
     /// The globally unique event identifier for the user who sent the event.
     pub event_id: OwnedEventId,
+
+    /// Data specific to the event type.
+    pub content: C,
 
     /// The fully-qualified ID of the user who sent this event.
     pub sender: OwnedUserId,
@@ -273,11 +273,11 @@ pub struct InitialStateEvent<C: StateEventContent> {
 /// list would be sorted lexicographically based on the event's `EventId`.
 #[derive(Clone, Debug, Event)]
 pub struct RedactedStateEvent<C: RedactedStateEventContent> {
-    /// Data specific to the event type.
-    pub content: C,
-
     /// The globally unique event identifier for the user who sent the event.
     pub event_id: OwnedEventId,
+
+    /// Data specific to the event type.
+    pub content: C,
 
     /// The fully-qualified ID of the user who sent this event.
     pub sender: OwnedUserId,
@@ -304,11 +304,11 @@ pub struct RedactedStateEvent<C: RedactedStateEventContent> {
 /// sorted list would be sorted lexicographically based on the event's `EventId`.
 #[derive(Clone, Debug, Event)]
 pub struct RedactedSyncStateEvent<C: RedactedStateEventContent> {
-    /// Data specific to the event type.
-    pub content: C,
-
     /// The globally unique event identifier for the user who sent the event.
     pub event_id: OwnedEventId,
+
+    /// Data specific to the event type.
+    pub content: C,
 
     /// The fully-qualified ID of the user who sent this event.
     pub sender: OwnedUserId,
