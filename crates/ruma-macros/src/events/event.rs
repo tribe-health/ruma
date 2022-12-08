@@ -190,6 +190,7 @@ fn expand_deserialize_event(
                         let content = {
                             let json = content.unwrap_or_else(|| {
                                 #tracing::warn!(
+                                    %event_id,
                                     "Missing content field on redacted event, falling back to \
                                      empty object",
                                 );
@@ -200,6 +201,7 @@ fn expand_deserialize_event(
                             C::from_parts(&event_type, &json)
                                 .or_else(|err| {
                                     #tracing::warn!(
+                                        %event_id,
                                         "Redacted event content is invalid: {}", err
                                     );
                                     C::empty(&event_type)
