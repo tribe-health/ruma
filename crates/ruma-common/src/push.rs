@@ -1337,6 +1337,8 @@ mod tests {
             users_power_levels: BTreeMap::new(),
             default_power_level: int!(50),
             notification_power_levels: NotificationPowerLevels { room: int!(50) },
+            #[cfg(feature = "unstable-msc3931")]
+            supported_features: Default::default(),
         };
 
         let context_public_room = &PushConditionRoomCtx {
@@ -1347,6 +1349,8 @@ mod tests {
             users_power_levels: BTreeMap::new(),
             default_power_level: int!(50),
             notification_power_levels: NotificationPowerLevels { room: int!(50) },
+            #[cfg(feature = "unstable-msc3931")]
+            supported_features: Default::default(),
         };
 
         let message = serde_json::from_str::<Raw<JsonValue>>(
@@ -1438,6 +1442,8 @@ mod tests {
             users_power_levels: BTreeMap::new(),
             default_power_level: int!(50),
             notification_power_levels: NotificationPowerLevels { room: int!(50) },
+            #[cfg(feature = "unstable-msc3931")]
+            supported_features: Default::default(),
         };
 
         let message = serde_json::from_str::<Raw<JsonValue>>(
