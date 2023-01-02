@@ -33,6 +33,8 @@ mod condition;
 mod iter;
 mod predefined;
 
+#[cfg(feature = "unstable-msc3932")]
+pub use self::condition::RoomVersionFeature;
 pub use self::{
     action::{Action, Tweak},
     condition::{
@@ -433,7 +435,33 @@ impl ConditionalPushRule {
     /// * `event` - The flattened JSON representation of a room message event.
     /// * `context` - The context of the room at the time of the event.
     pub fn applies(&self, event: &FlattenedJson, context: &PushConditionRoomCtx) -> bool {
-        self.enabled && self.conditions.iter().all(|cond| cond.applies(event, context))
+        if !self.enabled {
+            return false;
+        }
+
+        #[cfg(feature = "unstable-msc3932")]
+        {
+            // These 3 rules always apply.
+            if self.rule_id != PredefinedOverrideRuleId::Master.as_ref()
+                && self.rule_id != PredefinedOverrideRuleId::RoomNotif.as_ref()
+                && self.rule_id != PredefinedOverrideRuleId::ContainsDisplayName.as_ref()
+            {
+                // Push rules which don't specify a `room_version_supports` condition are assumed
+                // to not support extensible events and are therefore expected to be treated as
+                // disabled when a room version does support extensible events.
+                let room_supports_ext_ev =
+                    context.supported_features.contains(&RoomVersionFeature::ExtensibleEvents);
+                let rule_has_room_version_supports = self.conditions.iter().any(|condition| {
+                    matches!(condition, PushCondition::RoomVersionSupports { .. })
+                });
+
+                if room_supports_ext_ev && !rule_has_room_version_supports {
+                    return false;
+                }
+            }
+        }
+
+        self.conditions.iter().all(|cond| cond.applies(event, context))
     }
 }
 

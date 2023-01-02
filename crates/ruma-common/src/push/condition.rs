@@ -2,24 +2,58 @@ use std::{collections::BTreeMap, ops::RangeBounds, str::FromStr};
 
 use js_int::{Int, UInt};
 use regex::Regex;
+use ruma_macros::StringEnum;
 use serde::{Deserialize, Serialize};
 use serde_json::{to_value as to_json_value, value::Value as JsonValue};
 use tracing::{instrument, warn};
 use wildmatch::WildMatch;
 
-use crate::{power_levels::NotificationPowerLevels, serde::Raw, OwnedRoomId, OwnedUserId, UserId};
+use crate::{
+    power_levels::NotificationPowerLevels, serde::Raw, OwnedRoomId, OwnedUserId, PrivOwnedStr,
+    RoomVersionId, UserId,
+};
 
 mod room_member_count_is;
 
 pub use room_member_count_is::{ComparisonOperator, RoomMemberCountIs};
 
+/// Features supported by room versions.
 #[cfg(feature = "unstable-msc3931")]
-#[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
+#[doc = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/src/doc/string_enum.md"))]
+#[derive(Clone, Debug, PartialEq, Eq, StringEnum)]
 #[cfg_attr(not(feature = "unstable-exhaustive-types"), non_exhaustive)]
 pub enum RoomVersionFeature {
+    /// m.extensible_events
+    ///
+    /// The room supports [extensible events].
+    ///
+    /// [extensible events]: https://github.com/matrix-org/matrix-spec-proposals/pull/1767
     #[cfg(feature = "unstable-msc3932")]
-    #[serde(rename = "org.matrix.msc3932.extensible_events")]
+    #[ruma_enum(rename = "org.matrix.msc3932.extensible_events")]
     ExtensibleEvents,
+
+    #[doc(hidden)]
+    _Custom(PrivOwnedStr),
+}
+
+#[cfg(feature = "unstable-msc3931")]
+impl RoomVersionFeature {
+    /// Get the default features for the given room version.
+    pub fn list_for_room_version(version: &RoomVersionId) -> Vec<Self> {
+        match version {
+            RoomVersionId::V1
+            | RoomVersionId::V2
+            | RoomVersionId::V3
+            | RoomVersionId::V4
+            | RoomVersionId::V5
+            | RoomVersionId::V6
+            | RoomVersionId::V7
+            | RoomVersionId::V8
+            | RoomVersionId::V9
+            | RoomVersionId::V10
+            | RoomVersionId::_Custom(_) => vec![],
+        }
+    }
 }
 
 /// A condition that must apply for an associated push rule's action to be taken.
@@ -59,11 +93,11 @@ pub enum PushCondition {
         key: String,
     },
 
+    /// Apply the rule only to rooms that support a given feature.
     #[cfg(feature = "unstable-msc3931")]
     #[serde(rename = "org.matrix.msc3931.room_version_supports")]
-    /// Apply the rule only to rooms that support a given feature
     RoomVersionSupports {
-        /// The specific feature the room must support for the push rule to apply
+        /// The feature the room must support for the push rule to apply.
         feature: RoomVersionFeature,
     },
 }
@@ -128,7 +162,12 @@ impl PushCondition {
                 }
             }
             #[cfg(feature = "unstable-msc3931")]
-            Self::RoomVersionSupports { feature } => context.supported_features.contains(feature),
+            Self::RoomVersionSupports { feature } => match feature {
+                RoomVersionFeature::ExtensibleEvents => {
+                    context.supported_features.contains(&RoomVersionFeature::ExtensibleEvents)
+                }
+                RoomVersionFeature::_Custom(_) => false,
+            },
         }
     }
 }
@@ -159,7 +198,7 @@ pub struct PushConditionRoomCtx {
     pub notification_power_levels: NotificationPowerLevels,
 
     #[cfg(feature = "unstable-msc3931")]
-    /// The list of features this room's version or the room itself supports
+    /// The list of features this room's version or the room itself supports.
     pub supported_features: Vec<RoomVersionFeature>,
 }
 
@@ -725,12 +764,12 @@ mod tests {
         .unwrap();
         let simple_event = FlattenedJson::from_raw(&simple_event_raw);
 
-        let room_version_condiiton = PushCondition::RoomVersionSupports {
+        let room_version_condition = PushCondition::RoomVersionSupports {
             feature: super::RoomVersionFeature::ExtensibleEvents,
         };
 
-        assert!(room_version_condiiton.applies(&simple_event, &context_matching));
-        assert!(!room_version_condiiton.applies(&simple_event, &context_not_matching));
+        assert!(room_version_condition.applies(&simple_event, &context_matching));
+        assert!(!room_version_condition.applies(&simple_event, &context_not_matching));
     }
 
     #[test]
