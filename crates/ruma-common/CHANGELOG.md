@@ -8,6 +8,7 @@ Bug fixes:
   and `events::secret` modules
 * Fix deserialization of `RoomMessageEventContent` and `RoomEncryptedEventContent` when there
   is no relation
+* Allow to deserialize `PushCondition` with unknown kind
 
 Breaking changes:
 
