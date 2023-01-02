@@ -2,16 +2,16 @@ use std::{collections::BTreeMap, ops::RangeBounds, str::FromStr};
 
 use js_int::{Int, UInt};
 use regex::Regex;
+#[cfg(feature = "unstable-msc3931")]
 use ruma_macros::StringEnum;
 use serde::{Deserialize, Serialize};
 use serde_json::{to_value as to_json_value, value::Value as JsonValue};
 use tracing::{instrument, warn};
 use wildmatch::WildMatch;
 
-use crate::{
-    power_levels::NotificationPowerLevels, serde::Raw, OwnedRoomId, OwnedUserId, PrivOwnedStr,
-    RoomVersionId, UserId,
-};
+use crate::{power_levels::NotificationPowerLevels, serde::Raw, OwnedRoomId, OwnedUserId, UserId};
+#[cfg(feature = "unstable-msc3931")]
+use crate::{PrivOwnedStr, RoomVersionId};
 
 mod push_condition_serde;
 mod room_member_count_is;
