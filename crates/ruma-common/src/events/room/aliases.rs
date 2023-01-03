@@ -5,9 +5,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::value::RawValue as RawJsonValue;
 
 use crate::{
-    events::{
-        EventContent, RedactContent, RedactedStateEventContent, StateEventContent, StateEventType,
-    },
+    events::{EventContent, RedactContent, RedactedStateEventContent, StateEventType},
     OwnedRoomAliasId, OwnedServerName, RoomVersionId,
 };
 
@@ -94,8 +92,6 @@ impl EventContent for RedactedRoomAliasesEventContent {
     }
 }
 
-impl StateEventContent for RedactedRoomAliasesEventContent {
+impl RedactedStateEventContent for RedactedRoomAliasesEventContent {
     type StateKey = OwnedServerName;
 }
-
-impl RedactedStateEventContent for RedactedRoomAliasesEventContent {}

@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::value::RawValue as RawJsonValue;
 
 use super::{PolicyRuleEventContent, PossiblyRedactedPolicyRuleEventContent};
-use crate::events::{EventContent, StateEventContent, StateEventType};
+use crate::events::{EventContent, PossiblyRedactedStateEventContent, StateEventType};
 
 /// The content of an `m.policy.rule.room` event.
 ///
@@ -42,7 +42,7 @@ impl EventContent for PossiblyRedactedPolicyRuleRoomEventContent {
     }
 }
 
-impl StateEventContent for PossiblyRedactedPolicyRuleRoomEventContent {
+impl PossiblyRedactedStateEventContent for PossiblyRedactedPolicyRuleRoomEventContent {
     type StateKey = String;
 }
 

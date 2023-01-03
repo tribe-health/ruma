@@ -12,8 +12,7 @@ use serde_json::{from_str as from_json_str, value::RawValue as RawJsonValue};
 use crate::{
     events::{
         AnyStrippedStateEvent, BundledRelations, EventContent, RedactContent,
-        RedactedStateEventContent, StateEventContent, StateEventType, StateUnsignedFromParts,
-        StaticEventContent,
+        RedactedStateEventContent, StateEventType, StateUnsignedFromParts, StaticEventContent,
     },
     serde::{CanBeEmpty, Raw, StringEnum},
     OwnedMxcUri, OwnedServerName, OwnedServerSigningKeyId, OwnedTransactionId, OwnedUserId,
@@ -256,11 +255,9 @@ impl EventContent for RedactedRoomMemberEventContent {
     }
 }
 
-impl StateEventContent for RedactedRoomMemberEventContent {
+impl RedactedStateEventContent for RedactedRoomMemberEventContent {
     type StateKey = OwnedUserId;
 }
-
-impl RedactedStateEventContent for RedactedRoomMemberEventContent {}
 
 impl RoomMemberEvent {
     /// Obtain the membership state, regardless of whether this event is redacted.

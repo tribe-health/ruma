@@ -4,7 +4,7 @@ use serde_json::value::RawValue as RawJsonValue;
 use super::{
     EphemeralRoomEventContent, EphemeralRoomEventType, EventContent, GlobalAccountDataEventContent,
     GlobalAccountDataEventType, MessageLikeEventContent, MessageLikeEventType,
-    OriginalStateEventContent, RedactContent, RedactedMessageLikeEventContent,
+    PossiblyRedactedStateEventContent, RedactContent, RedactedMessageLikeEventContent,
     RedactedStateEventContent, RoomAccountDataEventContent, RoomAccountDataEventType,
     StateEventContent, StateEventType, StateUnsigned, ToDeviceEventContent, ToDeviceEventType,
 };
@@ -66,12 +66,15 @@ impl RedactedMessageLikeEventContent for CustomMessageLikeEventContent {}
 custom_room_event_content!(CustomStateEventContent, StateEventType);
 impl StateEventContent for CustomStateEventContent {
     type StateKey = String;
-}
-impl OriginalStateEventContent for CustomStateEventContent {
     type Unsigned = StateUnsigned<Self>;
     type PossiblyRedacted = Self;
 }
-impl RedactedStateEventContent for CustomStateEventContent {}
+impl PossiblyRedactedStateEventContent for CustomStateEventContent {
+    type StateKey = String;
+}
+impl RedactedStateEventContent for CustomStateEventContent {
+    type StateKey = String;
+}
 
 custom_event_content!(CustomToDeviceEventContent, ToDeviceEventType);
 impl ToDeviceEventContent for CustomToDeviceEventContent {}

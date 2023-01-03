@@ -6,7 +6,7 @@ use serde_json::value::RawValue as RawJsonValue;
 use crate::serde::{CanBeEmpty, Raw};
 
 use super::{
-    EphemeralRoomEventType, GlobalAccountDataEventType, MessageLikeEventType, RedactContent,
+    EphemeralRoomEventType, GlobalAccountDataEventType, MessageLikeEventType,
     RoomAccountDataEventType, StateEventType, StateUnsignedFromParts, ToDeviceEventType,
 };
 
@@ -109,25 +109,31 @@ pub trait EphemeralRoomEventContent: EventContent<EventType = EphemeralRoomEvent
 pub trait MessageLikeEventContent: EventContent<EventType = MessageLikeEventType> {}
 
 /// Content of a redacted message-like event.
-pub trait RedactedMessageLikeEventContent: MessageLikeEventContent {}
+pub trait RedactedMessageLikeEventContent: EventContent<EventType = MessageLikeEventType> {}
 
-/// Content of a state event.
+/// Content of a non-redacted state event.
 pub trait StateEventContent: EventContent<EventType = StateEventType> {
     /// The type of the event's `state_key` field.
     type StateKey: AsRef<str> + Clone + fmt::Debug + DeserializeOwned + Serialize;
-}
 
-/// Content of a non-redacted state event.
-pub trait OriginalStateEventContent: StateEventContent + RedactContent {
     /// The type of the event's `unsigned` field.
     type Unsigned: Clone + fmt::Debug + Default + CanBeEmpty + StateUnsignedFromParts;
 
     /// The possibly redacted form of the event's content.
-    type PossiblyRedacted: StateEventContent;
+    type PossiblyRedacted: PossiblyRedactedStateEventContent;
 }
 
 /// Content of a redacted state event.
-pub trait RedactedStateEventContent: StateEventContent {}
+pub trait RedactedStateEventContent: EventContent<EventType = StateEventType> {
+    /// The type of the event's `state_key` field.
+    type StateKey: AsRef<str> + Clone + fmt::Debug + DeserializeOwned + Serialize;
+}
+
+/// Content of a state event.
+pub trait PossiblyRedactedStateEventContent: EventContent<EventType = StateEventType> {
+    /// The type of the event's `state_key` field.
+    type StateKey: AsRef<str> + Clone + fmt::Debug + DeserializeOwned + Serialize;
+}
 
 /// Content of a to-device event.
 pub trait ToDeviceEventContent: EventContent<EventType = ToDeviceEventType> {}
